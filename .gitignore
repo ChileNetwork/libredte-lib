@@ -1,4 +1,5 @@
 # ejemplos, composer, pruebas, etc (archivos generados al usar la biblioteca)
+documentos
 doc/html
 doc/latex
 examples/config.php
