@@ -13,7 +13,7 @@ if(!(php_sapi_name() === 'cli')){
 }
 
 // incluir archivos php de la biblioteca y configuraciones
-include 'inc.php';    
+include 'inc.php';  
 
 // solicitar token
 $token = \sasco\LibreDTE\Sii\Autenticacion::getToken($config['firma']);

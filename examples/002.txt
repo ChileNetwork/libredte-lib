@@ -1,0 +1,22 @@
+{
+    "file":"\/home\/msoto77\/CosmosNetwork\/Proyecto2024\/LibreDTE\/libredte-lib\/documentos\/Cert\/certificado.p12",
+    "pass":"contrase\u00f1a",
+    "wordwrap":64
+}
+
+PHP Warning:  Trying to access array offset on null in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 412
+
+Warning: Trying to access array offset on null in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 412
+PHP Warning:  openssl_sign(): Supplied key param cannot be coerced into a private key in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 412
+
+Warning: openssl_sign(): Supplied key param cannot be coerced into a private key in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 412
+Token
+bool(false)
+FIN-Token
+
+ERRORES
+No fue posible firmar getToken. (by sasco\LibreDTE\Sii\Autenticacion::getTokenRequest() in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/Sii/Autenticacion.php on line 78)
+No fue posible firmar los datos (by sasco\LibreDTE\FirmaElectronica->error() in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 157)
+No fue posible leer los datos de la firma electrónica (verificar la contraseña). (by sasco\LibreDTE\FirmaElectronica->error() in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 157)
+
+FIN-ERRORES

@@ -1,42 +1,18 @@
 <?php
 
-/**
- * LibreDTE
- * Copyright (C) SASCO SpA (https://sasco.cl)
- *
- * Este programa es software libre: usted puede redistribuirlo y/o
- * modificarlo bajo los términos de la Licencia Pública General Affero de GNU
- * publicada por la Fundación para el Software Libre, ya sea la versión
- * 3 de la Licencia, o (a su elección) cualquier versión posterior de la
- * misma.
- *
- * Este programa se distribuye con la esperanza de que sea útil, pero
- * SIN GARANTÍA ALGUNA; ni siquiera la garantía implícita
- * MERCANTIL o de APTITUD PARA UN PROPÓSITO DETERMINADO.
- * Consulte los detalles de la Licencia Pública General Affero de GNU para
- * obtener una información más detallada.
- *
- * Debería haber recibido una copia de la Licencia Pública General Affero de GNU
- * junto a este programa.
- * En caso contrario, consulte <http://www.gnu.org/licenses/agpl.html>.
- */
-
 namespace sasco\LibreDTE\Sii;
 
 /**
- * Clase para realizar autenticación automática ante el SII y obtener el token
- * necesario para las transacciones con el sitio.
+ * Clase para realizar autenticación automática ante el SII y obtener el token necesario para las transacciones con el sitio.
+ * Provee sólo el método estático getToken(). 
+ * Modo de uso:
  *
- * Provee sólo el método estático getToken(). Modo de uso:
+    * \code{.php}
+    *   $firma_config = ['file'=>'/ruta/al/certificado.p12', 'pass'=>'contraseña'];
+    *   $token = \sasco\LibreDTE\Sii\Autenticacion::getToken($firma_config);
+    * \endcode
  *
- * \code{.php}
- *   $firma_config = ['file'=>'/ruta/al/certificado.p12', 'pass'=>'contraseña'];
- *   $token = \sasco\LibreDTE\Sii\Autenticacion::getToken($firma_config);
- * \endcode
- *
- * Si se está utilizando con el framework SowerPHP se puede omitir la
- * configuración de la firma, ya que se leerá desde la configuración de la
- * aplicación: firma_electronica.default
+ * Si se está utilizando con el framework SowerPHP se puede omitir la configuración de la firma, ya que se leerá desde la configuración de la aplicación: firma_electronica.default
  *
  * \code{.php}
  *   $token = \sasco\LibreDTE\Sii\Autenticacion::getToken();
@@ -49,7 +25,6 @@ namespace sasco\LibreDTE\Sii;
  */
 class Autenticacion
 {
-
     /**
      * Método para solicitar la semilla para la autenticación automática.
      * Nota: la semilla tiene una validez de 2 minutos.
@@ -63,7 +38,7 @@ class Autenticacion
      */
     private static function getSeed()
     {
-        $xml = \sasco\LibreDTE\Sii::request('CrSeed', 'getSeed');
+        $xml = \sasco\LibreDTE\Sii::request('CrSeed', 'getSeed'); 
         if ($xml===false or (string)$xml->xpath('/SII:RESPUESTA/SII:RESP_HDR/ESTADO')[0]!=='00') {
             \sasco\LibreDTE\Log::write(
                 \sasco\LibreDTE\Estado::AUTH_ERROR_SEMILLA,
@@ -106,9 +81,8 @@ class Autenticacion
     }
 
     /**
-     * Método para obtener el token de la sesión a través de una semilla
-     * previamente firmada
-     *
+     * Método para obtener el token de la sesión a través de una semilla previamente firmada.
+     * $firma=['pass'=>'mi_pass', 'file'=> certificado.p12]
      * WSDL producción: https://palena.sii.cl/DTEWS/GetTokenFromSeed.jws?WSDL
      * WSDL certificación: https://maullin.sii.cl/DTEWS/GetTokenFromSeed.jws?WSDL
      *
@@ -117,11 +91,14 @@ class Autenticacion
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2015-11-03
      */
-    public static function getToken($Firma = [])
+    public static function getToken($Firma = []) 
     {
         if (!$Firma) return false;
-        $semilla = self::getSeed();
+        
+        $semilla = self::getSeed(); 
+
         if (!$semilla) return false;
+        
         $requestFirmado = self::getTokenRequest($semilla, $Firma);
         if (!$requestFirmado) return false;
         $xml = \sasco\LibreDTE\Sii::request('GetTokenFromSeed', 'getToken', $requestFirmado);

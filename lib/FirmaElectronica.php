@@ -1,26 +1,5 @@
 <?php
 
-/**
- * LibreDTE
- * Copyright (C) SASCO SpA (https://sasco.cl)
- *
- * Este programa es software libre: usted puede redistribuirlo y/o
- * modificarlo bajo los términos de la Licencia Pública General Affero de GNU
- * publicada por la Fundación para el Software Libre, ya sea la versión
- * 3 de la Licencia, o (a su elección) cualquier versión posterior de la
- * misma.
- *
- * Este programa se distribuye con la esperanza de que sea útil, pero
- * SIN GARANTÍA ALGUNA; ni siquiera la garantía implícita
- * MERCANTIL o de APTITUD PARA UN PROPÓSITO DETERMINADO.
- * Consulte los detalles de la Licencia Pública General Affero de GNU para
- * obtener una información más detallada.
- *
- * Debería haber recibido una copia de la Licencia Pública General Affero de GNU
- * junto a este programa.
- * En caso contrario, consulte <http://www.gnu.org/licenses/agpl.html>.
- */
-
 namespace sasco\LibreDTE;
 
 /**
@@ -68,22 +47,27 @@ class FirmaElectronica
         // crear configuración
         if (!$config) {
             if (class_exists('\sowerphp\core\Configure')) {
-                $config = (array)\sowerphp\core\Configure::read('firma_electronica.default');
+                //$config = (array)\sowerphp\core\Configure::read('firma_electronica.default');
             } else {
                 $config = [];
             }
         }
-        $this->config = array_merge([
+        $this->config = array_merge([   
             'file' => null,
             'pass' => null,
             'wordwrap' => 64,
         ], $config);
+
+        //echo json_encode($this->config);
+
         // leer datos de la firma electrónica desde configuración con índices: cert y pkey
         if (!empty($this->config['cert']) and !empty($this->config['pkey'])) {
+
             $this->certs = [
                 'cert' => $this->config['cert'],
                 'pkey' => $this->config['pkey'],
             ];
+
             unset($this->config['cert'], $this->config['pkey']);
         }
         // se pasó el archivo de la firma o bien los datos de la firma
@@ -185,7 +169,8 @@ class FirmaElectronica
     {
         // RUN/RUT se encuentra en la extensión del certificado, esto de acuerdo
         // a Ley 19.799 sobre documentos electrónicos y firma electrónica
-        $x509 = new \phpseclib\File\X509();
+        //$x509 = new \phpseclib\File\X509();
+        $x509 = new \phpseclib3\File\X509();
         $cert = $x509->loadX509($this->certs['cert']);
         if (isset($cert['tbsCertificate']['extensions'])) {
             foreach ($cert['tbsCertificate']['extensions'] as $e) {
@@ -372,11 +357,7 @@ class FirmaElectronica
     public function getPrivateKey($clean = false)
     {
         if ($clean) {
-            return trim(str_replace(
-                ['-----BEGIN PRIVATE KEY-----', '-----END PRIVATE KEY-----'],
-                '',
-                $this->certs['pkey']
-            ));
+            return trim(str_replace(['-----BEGIN PRIVATE KEY-----', '-----END PRIVATE KEY-----'], '', $this->certs['pkey']));
         } else {
             return $this->certs['pkey'];
         }
@@ -393,9 +374,27 @@ class FirmaElectronica
     public function sign($data, $signature_alg = OPENSSL_ALGO_SHA1)
     {
         $signature = null;
-        if (openssl_sign($data, $signature, $this->certs['pkey'], $signature_alg)==false) {
-            return $this->error('No fue posible firmar los datos');
+
+        //PHP Warning:  Trying to access array offset on null in 
+        // Supplied key param cannot be coerced into a private key in 
+        /*
+        {
+            "file" : "\/home\/msoto77\/CosmosNetwork\/Proyecto2024\/LibreDTE\/libredte-lib\/documentos\/Cert\/certificado.p12",
+            "pass":"contrase\u00f1a",
+            "wordwrap":64
         }
+        
+        PHP Warning:  Trying to access array offset on null in /home/msoto77/CosmosNetwork/Proyecto2024/LibreDTE/libredte-lib/lib/FirmaElectronica.php on line 403
+        openssl_sign(): Supplied key param cannot be coerced into a private key in
+        //$this->certs['pkey'] : esta es la clave privada
+        */
+        echo json_encode($this->certs);
+        if(openssl_sign($data, $signature, $this->certs['pkey'], $signature_alg)===false) {
+            
+            return $this->error('No fue posible firmar los datos');
+
+        }
+
         return base64_encode($signature);
     }
 
@@ -510,9 +509,14 @@ class FirmaElectronica
         $Signature->getElementsByTagName('DigestValue')->item(0)->nodeValue = $digest;
         // calcular SignatureValue
         $SignedInfo = $doc->saveHTML($Signature->getElementsByTagName('SignedInfo')->item(0));
+
         $firma = $this->sign($SignedInfo);
+
+
         if (!$firma)
             return false;
+
+        
         $signature = wordwrap($firma, $this->config['wordwrap'], "\n", true);
         // reemplazar valores en la firma de
         $Signature->getElementsByTagName('SignatureValue')->item(0)->nodeValue = $signature;

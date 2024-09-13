@@ -107,7 +107,9 @@ class XML extends \DomDocument
                             if ($namespace) {
                                 $Node = $this->createElementNS($namespace[0], $namespace[1].':'.$key, $this->iso2utf($this->sanitize($value)));
                             } else {
-                                $Node = $this->createElement($key, $this->iso2utf($this->sanitize($value)));
+                                $sanitizado = $this->sanitize($value);
+                                $encoded_string = $this->iso2utf($sanitizado) ?? '';
+                                $Node = $this->createElement($key, $encoded_string );
                             }
                             $parent->appendChild($Node);
                         }
@@ -154,10 +156,10 @@ class XML extends \DomDocument
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-11-21
      */
-    public function loadXML($source, $options = null)
-    {
+    public function loadXML($source, $options = 0): bool
+    { 
         return $source ? parent::loadXML($this->iso2utf($source), $options) : false;
-    }
+    } 
 
     /**
      * Método para realizar consultas XPATH al documento XML
@@ -207,7 +209,10 @@ class XML extends \DomDocument
      */
     private function utf2iso($string)
     {
-        return mb_detect_encoding($string, ['UTF-8', 'ISO-8859-1']) != 'ISO-8859-1' ? utf8_decode($string) : $string;
+        //return mb_detect_encoding($string, ['UTF-8', 'ISO-8859-1']) != 'ISO-8859-1' ? utf8_decode($string) : $string;
+        return mb_detect_encoding($string, ['UTF-8', 'ISO-8859-1']) != 'ISO-8859-1' 
+        ? mb_convert_encoding($string, 'ISO-8859-1', 'UTF-8') 
+        : $string;
     }
 
     /**
@@ -220,8 +225,12 @@ class XML extends \DomDocument
      */
     private function iso2utf($string)
     {
-        return $string;
         //return mb_detect_encoding($string, ['ISO-8859-1', 'UTF-8']) == 'ISO-8859-1' ? utf8_encode($string) : $string;
+        return mb_detect_encoding($string, ['ISO-8859-1', 'UTF-8']) == 'ISO-8859-1' 
+           ? mb_convert_encoding($string, 'UTF-8', 'ISO-8859-1') 
+           : $string;
+        
+        
     }
 
     /**
@@ -391,10 +400,13 @@ class XML extends \DomDocument
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2017-01-20
      */
-    public function saveXML(\DOMNode $node = null, $options = null)
+    public function saveXML(\DOMNode $node = null, $options = 0): string | false
     {
+       
         $xml = parent::saveXML($node, $options);
+
         $xml = $this->fixEntities($xml);
+        
         return $xml;
     }
 
@@ -403,10 +415,12 @@ class XML extends \DomDocument
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2017-01-20
      */
-    public function C14N($exclusive = null, $with_comments = null, array $xpath = null, array $ns_prefixes = null)
+    public function C14N($exclusive = false, $with_comments = false, array $xpath = null, array $ns_prefixes = null): string | false
     {
         $xml = parent::C14N($exclusive, $with_comments, $xpath, $ns_prefixes);
+
         $xml = $this->fixEntities($xml);
+
         return $xml;
     }
 
